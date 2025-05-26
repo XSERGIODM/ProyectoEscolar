@@ -9,6 +9,7 @@ import com.proyectoescolar.utilidades.Utilidades;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -111,6 +112,11 @@ public class VentanaDocente extends VentanaBase {
         
         txtDetallesProyecto = new JTextArea();
         txtDetallesProyecto.setEditable(false);
+        
+        // Aumentar tamaño de letra en un 20%
+        Font fontDetallesProyecto = txtDetallesProyecto.getFont();
+        float newSizeDetallesProyecto = fontDetallesProyecto.getSize() * 1.2f;
+        txtDetallesProyecto.setFont(fontDetallesProyecto.deriveFont(newSizeDetallesProyecto));
         
         JScrollPane scrollDetalles = new JScrollPane(txtDetallesProyecto);
         scrollDetalles.setPreferredSize(new Dimension(400, 400));
@@ -253,10 +259,22 @@ public class VentanaDocente extends VentanaBase {
         
         JLabel lblObjetivos = new JLabel("Objetivos:");
         JTextArea txtObjetivos = new JTextArea(5, 20);
+        
+        // Aumentar tamaño de letra en un 20%
+        Font fontObjetivos = txtObjetivos.getFont();
+        float newSizeObjetivos = fontObjetivos.getSize() * 1.2f;
+        txtObjetivos.setFont(fontObjetivos.deriveFont(newSizeObjetivos));
+        
         JScrollPane scrollObjetivos = new JScrollPane(txtObjetivos);
         
         JLabel lblCronograma = new JLabel("Cronograma:");
         JTextArea txtCronograma = new JTextArea(5, 20);
+        
+        // Aumentar tamaño de letra en un 20%
+        Font fontCronograma = txtCronograma.getFont();
+        float newSizeCronograma = fontCronograma.getSize() * 1.2f;
+        txtCronograma.setFont(fontCronograma.deriveFont(newSizeCronograma));
+        
         JScrollPane scrollCronograma = new JScrollPane(txtCronograma);
         
         JLabel lblPresupuesto = new JLabel("Presupuesto ($):");
@@ -468,6 +486,12 @@ public class VentanaDocente extends VentanaBase {
         
         JLabel lblDescripcion = new JLabel("Descripción del Avance:");
         JTextArea txtDescripcion = new JTextArea(5, 20);
+        
+        // Aumentar tamaño de letra en un 20%
+        Font fontDescripcion = txtDescripcion.getFont();
+        float newSizeDescripcion = fontDescripcion.getSize() * 1.2f;
+        txtDescripcion.setFont(fontDescripcion.deriveFont(newSizeDescripcion));
+        
         JScrollPane scrollDescripcion = new JScrollPane(txtDescripcion);
         
         JLabel lblEvidencia = new JLabel("Evidencia (URL o descripción):");
@@ -551,6 +575,11 @@ public class VentanaDocente extends VentanaBase {
         
         JTextArea txtDetallesCompletos = new JTextArea();
         txtDetallesCompletos.setEditable(false);
+        
+        // Aumentar tamaño de letra en un 20%
+        Font fontDetallesCompletos = txtDetallesCompletos.getFont();
+        float newSizeDetallesCompletos = fontDetallesCompletos.getSize() * 1.2f;
+        txtDetallesCompletos.setFont(fontDetallesCompletos.deriveFont(newSizeDetallesCompletos));
         
         StringBuilder sb = new StringBuilder();
         sb.append("DETALLES DEL PROYECTO\n");

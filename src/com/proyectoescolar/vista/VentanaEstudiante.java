@@ -82,7 +82,12 @@ public class VentanaEstudiante extends VentanaBase {
         
         txtDetallesProyecto = new JTextArea();
         txtDetallesProyecto.setEditable(false);
-        txtDetallesProyecto.setFont(new Font("Arial", Font.PLAIN, 12));
+        
+        // Aumentar tamaño de letra en un 20%
+        Font fontDetallesProyecto = txtDetallesProyecto.getFont();
+        float newSizeDetallesProyecto = fontDetallesProyecto.getSize() * 1.2f;
+        txtDetallesProyecto.setFont(fontDetallesProyecto.deriveFont(newSizeDetallesProyecto));
+        
         txtDetallesProyecto.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
         JScrollPane scrollDetalles = new JScrollPane(txtDetallesProyecto);
@@ -214,7 +219,11 @@ public class VentanaEstudiante extends VentanaBase {
             
             JTextArea txtDetallesCompletos = new JTextArea();
             txtDetallesCompletos.setEditable(false);
-            txtDetallesCompletos.setFont(new Font("Arial", Font.PLAIN, 12));
+            
+            // Aumentar tamaño de letra en un 20%
+            Font fontDetallesCompletos = txtDetallesCompletos.getFont();
+            float newSizeDetallesCompletos = fontDetallesCompletos.getSize() * 1.2f;
+            txtDetallesCompletos.setFont(fontDetallesCompletos.deriveFont(newSizeDetallesCompletos));
             
             StringBuilder sb = new StringBuilder();
             sb.append("DETALLES DEL PROYECTO\n");

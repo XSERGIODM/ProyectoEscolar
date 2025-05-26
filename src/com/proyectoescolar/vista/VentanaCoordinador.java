@@ -4,13 +4,16 @@ import com.proyectoescolar.controlador.ControladorProyectos;
 import com.proyectoescolar.controlador.ControladorUsuarios;
 import com.proyectoescolar.modelo.CambioEstado;
 import com.proyectoescolar.modelo.Coordinador;
+import com.proyectoescolar.modelo.Docente;
 import com.proyectoescolar.modelo.EstadoProyecto;
 import com.proyectoescolar.modelo.Estudiante;
 import com.proyectoescolar.modelo.Proyecto;
+import com.proyectoescolar.modelo.Usuario;
 import com.proyectoescolar.utilidades.Utilidades;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,7 +26,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -48,6 +51,18 @@ public class VentanaCoordinador extends VentanaBase {
     private JButton btnFiltrar;
     private JTextField txtBusquedaInstitucion;
     private JButton btnBuscar;
+    
+    // Componentes para la gestión de usuarios
+    private JList<Usuario> listaUsuarios;
+    private DefaultListModel<Usuario> modeloListaUsuarios;
+    private JTextArea txtDetallesUsuario;
+    private JComboBox<String> cmbFiltroTipoUsuario;
+    private JButton btnFiltrarUsuarios;
+    private JTextField txtBusquedaUsuario;
+    private JButton btnBuscarUsuario;
+    private JButton btnRegistrarUsuario;
+    private JButton btnEditarUsuario;
+    private JButton btnEliminarUsuario;
     
     /**
      * Constructor de la ventana para coordinadores
@@ -125,6 +140,11 @@ public class VentanaCoordinador extends VentanaBase {
         txtDetallesProyecto = new JTextArea();
         txtDetallesProyecto.setEditable(false);
         
+        // Aumentar tamaño de letra en un 50%
+        Font fontDetallesProyecto = txtDetallesProyecto.getFont();
+        float newSizeDetallesProyecto = fontDetallesProyecto.getSize() * 1.2f;
+        txtDetallesProyecto.setFont(fontDetallesProyecto.deriveFont(newSizeDetallesProyecto));
+        
         JScrollPane scrollDetalles = new JScrollPane(txtDetallesProyecto);
         scrollDetalles.setPreferredSize(new Dimension(300, 400));
         
@@ -136,8 +156,12 @@ public class VentanaCoordinador extends VentanaBase {
         panelGestionProyectos.add(panelFiltros, BorderLayout.NORTH);
         panelGestionProyectos.add(panelListaDetalles, BorderLayout.CENTER);
         
+        // Crear pestaña de gestión de usuarios
+        JPanel panelGestionUsuarios = crearPanelGestionUsuarios();
+        
         // Agregar pestañas
         tabbedPane.addTab("Gestión de Proyectos", panelGestionProyectos);
+        tabbedPane.addTab("Gestión de Usuarios", panelGestionUsuarios);
         
         // Agregar el panel de pestañas al panel de contenido
         panelContenido.add(tabbedPane, BorderLayout.CENTER);
@@ -182,6 +206,607 @@ public class VentanaCoordinador extends VentanaBase {
         
         // Cargar todos los proyectos
         cargarTodosLosProyectos();
+    }
+    
+    /**
+     * Método para crear el panel de gestión de usuarios
+     * @return Panel configurado
+     */
+    private JPanel crearPanelGestionUsuarios() {
+        JPanel panelGestionUsuarios = new JPanel(new BorderLayout(10, 10));
+        
+        // Panel de filtros para usuarios
+        JPanel panelFiltrosUsuarios = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        panelFiltrosUsuarios.setBorder(BorderFactory.createTitledBorder("Filtros"));
+        
+        JLabel lblFiltroTipoUsuario = new JLabel("Filtrar por Tipo:");
+        cmbFiltroTipoUsuario = new JComboBox<>();
+        cmbFiltroTipoUsuario.addItem("Todos");
+        cmbFiltroTipoUsuario.addItem("Estudiantes");
+        cmbFiltroTipoUsuario.addItem("Docentes");
+        
+        btnFiltrarUsuarios = new JButton("Filtrar");
+        
+        JLabel lblBusquedaUsuario = new JLabel("Buscar por Nombre:");
+        txtBusquedaUsuario = new JTextField(15);
+        btnBuscarUsuario = new JButton("Buscar");
+        
+        panelFiltrosUsuarios.add(lblFiltroTipoUsuario);
+        panelFiltrosUsuarios.add(cmbFiltroTipoUsuario);
+        panelFiltrosUsuarios.add(btnFiltrarUsuarios);
+        panelFiltrosUsuarios.add(lblBusquedaUsuario);
+        panelFiltrosUsuarios.add(txtBusquedaUsuario);
+        panelFiltrosUsuarios.add(btnBuscarUsuario);
+        
+        // Panel de lista y detalles de usuarios
+        JPanel panelListaDetallesUsuarios = new JPanel(new GridLayout(1, 2, 10, 10));
+        
+        // Panel de lista de usuarios
+        JPanel panelListaUsuarios = new JPanel(new BorderLayout(5, 5));
+        panelListaUsuarios.setBorder(BorderFactory.createTitledBorder("Usuarios"));
+        
+        modeloListaUsuarios = new DefaultListModel<>();
+        listaUsuarios = new JList<>(modeloListaUsuarios);
+        listaUsuarios.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        JScrollPane scrollUsuarios = new JScrollPane(listaUsuarios);
+        scrollUsuarios.setPreferredSize(new Dimension(300, 400));
+        
+        JPanel panelBotonesUsuarios = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        btnRegistrarUsuario = new JButton("Registrar");
+        btnEditarUsuario = new JButton("Editar");
+        btnEliminarUsuario = new JButton("Eliminar");
+        
+        panelBotonesUsuarios.add(btnRegistrarUsuario);
+        panelBotonesUsuarios.add(btnEditarUsuario);
+        panelBotonesUsuarios.add(btnEliminarUsuario);
+        
+        panelListaUsuarios.add(new JLabel("Seleccione un usuario:"), BorderLayout.NORTH);
+        panelListaUsuarios.add(scrollUsuarios, BorderLayout.CENTER);
+        panelListaUsuarios.add(panelBotonesUsuarios, BorderLayout.SOUTH);
+        
+        // Panel de detalles de usuario
+        JPanel panelDetallesUsuario = new JPanel(new BorderLayout(5, 5));
+        panelDetallesUsuario.setBorder(BorderFactory.createTitledBorder("Detalles del Usuario"));
+        
+        txtDetallesUsuario = new JTextArea();
+        txtDetallesUsuario.setEditable(false);
+        
+        // Aumentar tamaño de letra en un 50%
+        Font fontDetallesUsuario = txtDetallesUsuario.getFont();
+        float newSizeDetallesUsuario = fontDetallesUsuario.getSize() * 1.5f;
+        txtDetallesUsuario.setFont(fontDetallesUsuario.deriveFont(newSizeDetallesUsuario));
+        
+        JScrollPane scrollDetallesUsuario = new JScrollPane(txtDetallesUsuario);
+        scrollDetallesUsuario.setPreferredSize(new Dimension(300, 400));
+        
+        panelDetallesUsuario.add(scrollDetallesUsuario, BorderLayout.CENTER);
+        
+        panelListaDetallesUsuarios.add(panelListaUsuarios);
+        panelListaDetallesUsuarios.add(panelDetallesUsuario);
+        
+        panelGestionUsuarios.add(panelFiltrosUsuarios, BorderLayout.NORTH);
+        panelGestionUsuarios.add(panelListaDetallesUsuarios, BorderLayout.CENTER);
+        
+        // Configurar eventos de usuario
+        btnFiltrarUsuarios.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                filtrarUsuariosPorTipo();
+            }
+        });
+        
+        btnBuscarUsuario.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                buscarUsuariosPorNombre();
+            }
+        });
+        
+        btnRegistrarUsuario.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mostrarFormularioRegistrarUsuario();
+            }
+        });
+        
+        btnEditarUsuario.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                editarUsuarioSeleccionado();
+            }
+        });
+        
+        btnEliminarUsuario.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                eliminarUsuarioSeleccionado();
+            }
+        });
+        
+        listaUsuarios.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    actualizarDetallesUsuario();
+                }
+            }
+        });
+        
+        // Cargar todos los usuarios
+        cargarTodosLosUsuarios();
+        
+        return panelGestionUsuarios;
+    }
+    
+    /**
+     * Método para cargar todos los usuarios
+     */
+    private void cargarTodosLosUsuarios() {
+        modeloListaUsuarios.clear();
+        
+        // Cargar estudiantes
+        List<Estudiante> estudiantes = controladorUsuarios.obtenerEstudiantes();
+        for (Estudiante estudiante : estudiantes) {
+            modeloListaUsuarios.addElement(estudiante);
+        }
+        
+        // Cargar docentes
+        List<Docente> docentes = controladorUsuarios.obtenerDocentes();
+        for (Docente docente : docentes) {
+            modeloListaUsuarios.addElement(docente);
+        }
+        
+        if (modeloListaUsuarios.isEmpty()) {
+            Utilidades.mostrarMensaje("No hay usuarios registrados en el sistema.", "Información");
+        }
+    }
+    
+    /**
+     * Método para filtrar usuarios por tipo
+     */
+    private void filtrarUsuariosPorTipo() {
+        String filtro = (String) cmbFiltroTipoUsuario.getSelectedItem();
+        
+        modeloListaUsuarios.clear();
+        
+        if ("Todos".equals(filtro) || filtro == null) {
+            cargarTodosLosUsuarios();
+        } else if ("Estudiantes".equals(filtro)) {
+            List<Estudiante> estudiantes = controladorUsuarios.obtenerEstudiantes();
+            for (Estudiante estudiante : estudiantes) {
+                modeloListaUsuarios.addElement(estudiante);
+            }
+        } else if ("Docentes".equals(filtro)) {
+            List<Docente> docentes = controladorUsuarios.obtenerDocentes();
+            for (Docente docente : docentes) {
+                modeloListaUsuarios.addElement(docente);
+            }
+        }
+        
+        if (modeloListaUsuarios.isEmpty()) {
+            Utilidades.mostrarMensaje("No se encontraron usuarios con el filtro seleccionado.", "Información");
+        }
+    }
+    
+    /**
+     * Método para buscar usuarios por nombre
+     */
+    private void buscarUsuariosPorNombre() {
+        String busqueda = txtBusquedaUsuario.getText().trim().toLowerCase();
+        
+        if (busqueda.isEmpty()) {
+            cargarTodosLosUsuarios();
+            return;
+        }
+        
+        modeloListaUsuarios.clear();
+        
+        // Filtrar por nombre o apellido
+        List<Estudiante> estudiantes = controladorUsuarios.obtenerEstudiantes();
+        for (Estudiante estudiante : estudiantes) {
+            if (estudiante.getNombre().toLowerCase().contains(busqueda) || 
+                estudiante.getApellido().toLowerCase().contains(busqueda)) {
+                modeloListaUsuarios.addElement(estudiante);
+            }
+        }
+        
+        List<Docente> docentes = controladorUsuarios.obtenerDocentes();
+        for (Docente docente : docentes) {
+            if (docente.getNombre().toLowerCase().contains(busqueda) || 
+                docente.getApellido().toLowerCase().contains(busqueda)) {
+                modeloListaUsuarios.addElement(docente);
+            }
+        }
+        
+        if (modeloListaUsuarios.isEmpty()) {
+            Utilidades.mostrarMensaje("No se encontraron usuarios que coincidan con la búsqueda.", "Información");
+        }
+    }
+    
+    /**
+     * Método para actualizar los detalles del usuario seleccionado
+     */
+    private void actualizarDetallesUsuario() {
+        Usuario usuarioSeleccionado = listaUsuarios.getSelectedValue();
+        
+        if (usuarioSeleccionado != null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("DETALLES DEL USUARIO\n");
+            sb.append("====================\n\n");
+            sb.append("ID: ").append(usuarioSeleccionado.getId()).append("\n");
+            sb.append("Nombre: ").append(usuarioSeleccionado.getNombre()).append("\n");
+            sb.append("Apellido: ").append(usuarioSeleccionado.getApellido()).append("\n");
+            sb.append("Rol: ").append(usuarioSeleccionado.getRol()).append("\n");
+            sb.append("Correo: ").append(usuarioSeleccionado.getCorreo()).append("\n");
+            sb.append("Teléfono: ").append(usuarioSeleccionado.getTelefono()).append("\n");
+            sb.append("Nombre de Usuario: ").append(usuarioSeleccionado.getNombreUsuario()).append("\n\n");
+            
+            if (usuarioSeleccionado instanceof Estudiante) {
+                Estudiante estudiante = (Estudiante) usuarioSeleccionado;
+                sb.append("Institución: ").append(estudiante.getInstitucion()).append("\n");
+                sb.append("Grado: ").append(estudiante.getGrado()).append("\n");
+            } else if (usuarioSeleccionado instanceof Docente) {
+                Docente docente = (Docente) usuarioSeleccionado;
+                sb.append("Institución: ").append(docente.getInstitucion()).append("\n");
+                sb.append("Especialidad: ").append(docente.getEspecialidad()).append("\n");
+            }
+            
+            txtDetallesUsuario.setText(sb.toString());
+        } else {
+            txtDetallesUsuario.setText("");
+        }
+    }
+    
+    /**
+     * Método para mostrar el formulario de registro de usuarios
+     */
+    private void mostrarFormularioRegistrarUsuario() {
+        // Crear un diálogo para el formulario
+        JDialog dialog = new JDialog(this, "Registrar Usuario", true);
+        dialog.setSize(500, 400);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout(10, 10));
+        
+        JPanel panelFormulario = new JPanel(new GridLayout(10, 2, 5, 5));
+        panelFormulario.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        // Componentes del formulario
+        JLabel lblTipoUsuario = new JLabel("Tipo de Usuario:");
+        JComboBox<String> cmbTipoUsuario = new JComboBox<>(new String[]{"","Estudiante", "Docente"});
+        
+        JLabel lblId = new JLabel("ID:");
+        JTextField txtId = new JTextField(20);
+        
+        JLabel lblNombre = new JLabel("Nombre:");
+        JTextField txtNombre = new JTextField(20);
+        
+        JLabel lblApellido = new JLabel("Apellido:");
+        JTextField txtApellido = new JTextField(20);
+        
+        JLabel lblCorreo = new JLabel("Correo:");
+        JTextField txtCorreo = new JTextField(20);
+        
+        JLabel lblTelefono = new JLabel("Teléfono:");
+        JTextField txtTelefono = new JTextField(20);
+        
+        JLabel lblNombreUsuario = new JLabel("Nombre de Usuario:");
+        JTextField txtNombreUsuario = new JTextField(20);
+        
+        JLabel lblContrasena = new JLabel("Contraseña:");
+        JTextField txtContrasena = new JTextField(20);
+        
+        JLabel lblInstitucion = new JLabel("Institución:");
+        JTextField txtInstitucion = new JTextField(20);
+        
+        JLabel lblEspecifico = new JLabel();
+        JTextField txtEspecifico = new JTextField(20);
+        
+        // Configurar cambio dinámico de la etiqueta específica
+        cmbTipoUsuario.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if ("Estudiante".equals(cmbTipoUsuario.getSelectedItem())) {
+                    lblEspecifico.setText("Grado:");
+                } else {
+                    lblEspecifico.setText("Especialidad:");
+                }
+            }
+        });
+        
+        // Agregar componentes al panel
+        panelFormulario.add(lblTipoUsuario);
+        panelFormulario.add(cmbTipoUsuario);
+        panelFormulario.add(lblId);
+        panelFormulario.add(txtId);
+        panelFormulario.add(lblNombre);
+        panelFormulario.add(txtNombre);
+        panelFormulario.add(lblApellido);
+        panelFormulario.add(txtApellido);
+        panelFormulario.add(lblCorreo);
+        panelFormulario.add(txtCorreo);
+        panelFormulario.add(lblTelefono);
+        panelFormulario.add(txtTelefono);
+        panelFormulario.add(lblNombreUsuario);
+        panelFormulario.add(txtNombreUsuario);
+        panelFormulario.add(lblContrasena);
+        panelFormulario.add(txtContrasena);
+        panelFormulario.add(lblInstitucion);
+        panelFormulario.add(txtInstitucion);
+        panelFormulario.add(lblEspecifico);
+        panelFormulario.add(txtEspecifico);
+        
+        // Panel de botones
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnGuardar = new JButton("Guardar");
+        JButton btnCancelar = new JButton("Cancelar");
+        
+        panelBotones.add(btnGuardar);
+        panelBotones.add(btnCancelar);
+        
+        // Agregar paneles al diálogo
+        dialog.add(panelFormulario, BorderLayout.CENTER);
+        dialog.add(panelBotones, BorderLayout.SOUTH);
+        
+        // Configurar eventos
+        btnGuardar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Validar campos
+                if (txtId.getText().trim().isEmpty() || txtNombre.getText().trim().isEmpty() ||
+                    txtApellido.getText().trim().isEmpty() || txtCorreo.getText().trim().isEmpty() ||
+                    txtTelefono.getText().trim().isEmpty() || txtNombreUsuario.getText().trim().isEmpty() ||
+                    txtContrasena.getText().trim().isEmpty() || txtInstitucion.getText().trim().isEmpty() ||
+                    txtEspecifico.getText().trim().isEmpty() || cmbTipoUsuario.getSelectedItem() == "") {
+                    Utilidades.mostrarMensaje("Todos los campos son obligatorios.", "Error");
+                    return;
+                }
+                
+                // Registrar usuario
+                boolean registroExitoso = false;
+                
+                if ("Estudiante".equals(cmbTipoUsuario.getSelectedItem())) {
+                    Estudiante estudiante = controladorUsuarios.registrarEstudiante(
+                        txtId.getText().trim(),
+                        txtNombre.getText().trim(),
+                        txtApellido.getText().trim(),
+                        txtCorreo.getText().trim(),
+                        txtTelefono.getText().trim(),
+                        txtNombreUsuario.getText().trim(),
+                        txtContrasena.getText().trim(),
+                        txtInstitucion.getText().trim(),
+                        txtEspecifico.getText().trim()
+                    );
+                    
+                    registroExitoso = (estudiante != null);
+                } else {
+                    Docente docente = controladorUsuarios.registrarDocente(
+                        txtId.getText().trim(),
+                        txtNombre.getText().trim(),
+                        txtApellido.getText().trim(),
+                        txtCorreo.getText().trim(),
+                        txtTelefono.getText().trim(),
+                        txtNombreUsuario.getText().trim(),
+                        txtContrasena.getText().trim(),
+                        txtInstitucion.getText().trim(),
+                        txtEspecifico.getText().trim()
+                    );
+                    
+                    registroExitoso = (docente != null);
+                }
+                
+                if (registroExitoso) {
+                    Utilidades.mostrarMensaje("Usuario registrado exitosamente.", "Información");
+                    cargarTodosLosUsuarios();
+                    dialog.dispose();
+                } else {
+                    Utilidades.mostrarMensaje("No se pudo registrar el usuario. El nombre de usuario ya existe.", "Error");
+                }
+            }
+        });
+        
+        btnCancelar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+        
+        dialog.setVisible(true);
+    }
+    
+    /**
+     * Método para editar el usuario seleccionado
+     */
+    private void editarUsuarioSeleccionado() {
+        Usuario usuarioSeleccionado = listaUsuarios.getSelectedValue();
+        
+        if (usuarioSeleccionado == null) {
+            Utilidades.mostrarMensaje("Por favor, seleccione un usuario para editar.", "Información");
+            return;
+        }
+        
+        // Crear un diálogo para el formulario de edición
+        JDialog dialog = new JDialog(this, "Editar Usuario", true);
+        dialog.setSize(500, 400);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout(10, 10));
+        
+        JPanel panelFormulario = new JPanel(new GridLayout(9, 2, 5, 5));
+        panelFormulario.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        // Componentes del formulario
+        JLabel lblId = new JLabel("ID:");
+        JTextField txtId = new JTextField(usuarioSeleccionado.getId(), 20);
+        txtId.setEditable(false); // No permitir editar el ID
+        
+        JLabel lblNombre = new JLabel("Nombre:");
+        JTextField txtNombre = new JTextField(usuarioSeleccionado.getNombre(), 20);
+        
+        JLabel lblApellido = new JLabel("Apellido:");
+        JTextField txtApellido = new JTextField(usuarioSeleccionado.getApellido(), 20);
+        
+        JLabel lblCorreo = new JLabel("Correo:");
+        JTextField txtCorreo = new JTextField(usuarioSeleccionado.getCorreo(), 20);
+        
+        JLabel lblTelefono = new JLabel("Teléfono:");
+        JTextField txtTelefono = new JTextField(usuarioSeleccionado.getTelefono(), 20);
+        
+        JLabel lblNombreUsuario = new JLabel("Nombre de Usuario:");
+        JTextField txtNombreUsuario = new JTextField(usuarioSeleccionado.getNombreUsuario(), 20);
+        txtNombreUsuario.setEditable(false); // No permitir editar el nombre de usuario
+        
+        JLabel lblContrasena = new JLabel("Contraseña:");
+        JTextField txtContrasena = new JTextField(usuarioSeleccionado.getContrasena(), 20);
+        
+        JLabel lblInstitucion = new JLabel("Institución:");
+        JTextField txtInstitucion = new JTextField(20);
+        
+        JLabel lblEspecifico = new JLabel();
+        JTextField txtEspecifico = new JTextField(20);
+        
+        // Configurar campos específicos según el tipo de usuario
+        if (usuarioSeleccionado instanceof Estudiante) {
+            Estudiante estudiante = (Estudiante) usuarioSeleccionado;
+            lblEspecifico.setText("Grado:");
+            txtInstitucion.setText(estudiante.getInstitucion());
+            txtEspecifico.setText(estudiante.getGrado());
+        } else if (usuarioSeleccionado instanceof Docente) {
+            Docente docente = (Docente) usuarioSeleccionado;
+            lblEspecifico.setText("Especialidad:");
+            txtInstitucion.setText(docente.getInstitucion());
+            txtEspecifico.setText(docente.getEspecialidad());
+        }
+        
+        // Agregar componentes al panel
+        panelFormulario.add(lblId);
+        panelFormulario.add(txtId);
+        panelFormulario.add(lblNombre);
+        panelFormulario.add(txtNombre);
+        panelFormulario.add(lblApellido);
+        panelFormulario.add(txtApellido);
+        panelFormulario.add(lblCorreo);
+        panelFormulario.add(txtCorreo);
+        panelFormulario.add(lblTelefono);
+        panelFormulario.add(txtTelefono);
+        panelFormulario.add(lblNombreUsuario);
+        panelFormulario.add(txtNombreUsuario);
+        panelFormulario.add(lblContrasena);
+        panelFormulario.add(txtContrasena);
+        panelFormulario.add(lblInstitucion);
+        panelFormulario.add(txtInstitucion);
+        panelFormulario.add(lblEspecifico);
+        panelFormulario.add(txtEspecifico);
+        
+        // Panel de botones
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnGuardar = new JButton("Guardar");
+        JButton btnCancelar = new JButton("Cancelar");
+        
+        panelBotones.add(btnGuardar);
+        panelBotones.add(btnCancelar);
+        
+        // Agregar paneles al diálogo
+        dialog.add(panelFormulario, BorderLayout.CENTER);
+        dialog.add(panelBotones, BorderLayout.SOUTH);
+        
+        // Configurar eventos
+        btnGuardar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Validar campos
+                if (txtNombre.getText().trim().isEmpty() || txtApellido.getText().trim().isEmpty() ||
+                    txtCorreo.getText().trim().isEmpty() || txtTelefono.getText().trim().isEmpty() ||
+                    txtContrasena.getText().trim().isEmpty() || txtInstitucion.getText().trim().isEmpty() ||
+                    txtEspecifico.getText().trim().isEmpty()) {
+                    Utilidades.mostrarMensaje("Todos los campos son obligatorios.", "Error");
+                    return;
+                }
+                
+                // Actualizar usuario
+                usuarioSeleccionado.setNombre(txtNombre.getText().trim());
+                usuarioSeleccionado.setApellido(txtApellido.getText().trim());
+                usuarioSeleccionado.setCorreo(txtCorreo.getText().trim());
+                usuarioSeleccionado.setTelefono(txtTelefono.getText().trim());
+                usuarioSeleccionado.setContrasena(txtContrasena.getText().trim());
+                
+                if (usuarioSeleccionado instanceof Estudiante) {
+                    Estudiante estudiante = (Estudiante) usuarioSeleccionado;
+                    estudiante.setInstitucion(txtInstitucion.getText().trim());
+                    estudiante.setGrado(txtEspecifico.getText().trim());
+                } else if (usuarioSeleccionado instanceof Docente) {
+                    Docente docente = (Docente) usuarioSeleccionado;
+                    docente.setInstitucion(txtInstitucion.getText().trim());
+                    docente.setEspecialidad(txtEspecifico.getText().trim());
+                }
+                
+                Utilidades.mostrarMensaje("Usuario actualizado exitosamente.", "Información");
+                actualizarDetallesUsuario();
+                dialog.dispose();
+            }
+        });
+        
+        btnCancelar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+        
+        dialog.setVisible(true);
+    }
+    
+    /**
+     * Método para eliminar el usuario seleccionado
+     */
+    private void eliminarUsuarioSeleccionado() {
+        Usuario usuarioSeleccionado = listaUsuarios.getSelectedValue();
+        
+        if (usuarioSeleccionado == null) {
+            Utilidades.mostrarMensaje("Por favor, seleccione un usuario para eliminar.", "Información");
+            return;
+        }
+        
+        int respuesta = JOptionPane.showConfirmDialog(
+            this,
+            "¿Está seguro de eliminar al usuario " + usuarioSeleccionado.getNombreCompleto() + "?",
+            "Confirmar Eliminación",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+        );
+        
+        if (respuesta == JOptionPane.YES_OPTION) {
+            // Verificar si es un docente con proyectos
+            if (usuarioSeleccionado instanceof Docente) {
+                Docente docente = (Docente) usuarioSeleccionado;
+                if (!docente.getProyectos().isEmpty()) {
+                    Utilidades.mostrarMensaje(
+                        "No se puede eliminar al docente porque tiene proyectos asignados. " +
+                        "Por favor, reasigne o elimine los proyectos primero.",
+                        "Error"
+                    );
+                    return;
+                }
+            }
+            
+            // Eliminar el usuario
+            boolean eliminado = false;
+            for (int i = 0; i < modeloListaUsuarios.size(); i++) {
+                Usuario usuario = modeloListaUsuarios.getElementAt(i);
+                if (usuario.getId().equals(usuarioSeleccionado.getId())) {
+                    modeloListaUsuarios.remove(i);
+                    eliminado = true;
+                    break;
+                }
+            }
+            
+            if (eliminado) {
+                Utilidades.mostrarMensaje("Usuario eliminado exitosamente.", "Información");
+                txtDetallesUsuario.setText("");
+            } else {
+                Utilidades.mostrarMensaje("No se pudo eliminar el usuario.", "Error");
+            }
+        }
     }
     
     /**
@@ -274,6 +899,12 @@ public class VentanaCoordinador extends VentanaBase {
         
         JLabel lblComentario = new JLabel("Comentario:");
         JTextArea txtComentario = new JTextArea(3, 20);
+        
+        // Aumentar tamaño de letra en un 50%
+        Font fontComentario = txtComentario.getFont();
+        float newSizeComentario = fontComentario.getSize() * 1.5f;
+        txtComentario.setFont(fontComentario.deriveFont(newSizeComentario));
+        
         JScrollPane scrollComentario = new JScrollPane(txtComentario);
         
         JButton btnGuardar = new JButton("Guardar");
@@ -408,6 +1039,11 @@ public class VentanaCoordinador extends VentanaBase {
         
         JTextArea txtDetallesCompletos = new JTextArea();
         txtDetallesCompletos.setEditable(false);
+        
+        // Aumentar tamaño de letra en un 50%
+        Font fontDetallesCompletos = txtDetallesCompletos.getFont();
+        float newSizeDetallesCompletos = fontDetallesCompletos.getSize() * 1.5f;
+        txtDetallesCompletos.setFont(fontDetallesCompletos.deriveFont(newSizeDetallesCompletos));
         
         StringBuilder sb = new StringBuilder();
         sb.append("INFORME COMPLETO DEL PROYECTO\n");
