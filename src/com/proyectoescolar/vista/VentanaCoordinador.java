@@ -47,6 +47,8 @@ public class VentanaCoordinador extends VentanaBase {
     private JTextArea txtDetallesProyecto;
     private JButton btnCambiarEstado;
     private JButton btnVerDetalles;
+    private JButton btnActualizarProyecto;
+    private JButton btnEliminarProyecto;
     private JComboBox<String> cmbFiltroEstado;
     private JButton btnFiltrar;
     private JTextField txtBusquedaInstitucion;
@@ -125,9 +127,13 @@ public class VentanaCoordinador extends VentanaBase {
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER));
         btnCambiarEstado = new JButton("Cambiar Estado");
         btnVerDetalles = new JButton("Ver Detalles");
+        btnActualizarProyecto = new JButton("Actualizar");
+        btnEliminarProyecto = new JButton("Eliminar");
         
         panelBotones.add(btnCambiarEstado);
         panelBotones.add(btnVerDetalles);
+        panelBotones.add(btnActualizarProyecto);
+        panelBotones.add(btnEliminarProyecto);
         
         panelLista.add(new JLabel("Seleccione un proyecto:"), BorderLayout.NORTH);
         panelLista.add(scrollProyectos, BorderLayout.CENTER);
@@ -178,6 +184,20 @@ public class VentanaCoordinador extends VentanaBase {
             @Override
             public void actionPerformed(ActionEvent e) {
                 verDetallesProyecto();
+            }
+        });
+        
+        btnActualizarProyecto.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actualizarProyectoSeleccionado();
+            }
+        });
+        
+        btnEliminarProyecto.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                eliminarProyectoSeleccionado();
             }
         });
         
@@ -1141,5 +1161,190 @@ public class VentanaCoordinador extends VentanaBase {
         
         frameDetalles.add(panelDetalles);
         frameDetalles.setVisible(true);
+    }
+    
+    /**
+     * Método para eliminar el proyecto seleccionado
+     */
+    private void eliminarProyectoSeleccionado() {
+        Proyecto proyectoSeleccionado = listaProyectos.getSelectedValue();
+        
+        if (proyectoSeleccionado == null) {
+            Utilidades.mostrarError("Debe seleccionar un proyecto para eliminar", "Error");
+            return;
+        }
+        
+        int respuesta = JOptionPane.showConfirmDialog(
+            this,
+            "¿Está seguro de eliminar el proyecto '" + proyectoSeleccionado.getTitulo() + "'?\n" +
+            "Esta acción no se puede deshacer.",
+            "Confirmar Eliminación",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+        );
+        
+        if (respuesta == JOptionPane.YES_OPTION) {
+            // Eliminar el proyecto del modelo
+            modeloListaProyectos.removeElement(proyectoSeleccionado);
+            
+            // Limpiar el área de detalles
+            txtDetallesProyecto.setText("");
+            
+            // Mostrar mensaje de éxito
+            Utilidades.mostrarMensaje("Proyecto eliminado exitosamente", "Éxito");
+        }
+    }
+    
+    /**
+     * Método para actualizar el proyecto seleccionado
+     */
+    private void actualizarProyectoSeleccionado() {
+        Proyecto proyectoSeleccionado = listaProyectos.getSelectedValue();
+        
+        if (proyectoSeleccionado == null) {
+            Utilidades.mostrarError("Debe seleccionar un proyecto para actualizar", "Error");
+            return;
+        }
+        
+        // Crear un diálogo para editar el proyecto
+        JDialog dialog = new JDialog(this, "Actualizar Proyecto", true);
+        dialog.setSize(600, 500);
+        dialog.setLocationRelativeTo(this);
+        
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        // Panel para los campos del formulario
+        JPanel panelFormulario = new JPanel(new GridLayout(6, 2, 10, 10));
+        
+        JLabel lblTitulo = new JLabel("Título:");
+        JTextField txtTitulo = new JTextField(proyectoSeleccionado.getTitulo());
+        
+        JLabel lblArea = new JLabel("Área:");
+        JTextField txtArea = new JTextField(proyectoSeleccionado.getArea());
+        
+        JLabel lblObjetivos = new JLabel("Objetivos:");
+        JTextArea txtObjetivos = new JTextArea(proyectoSeleccionado.getObjetivos(), 5, 20);
+        
+        // Aumentar tamaño de letra en un 20%
+        Font fontObjetivos = txtObjetivos.getFont();
+        float newSizeObjetivos = fontObjetivos.getSize() * 1.2f;
+        txtObjetivos.setFont(fontObjetivos.deriveFont(newSizeObjetivos));
+        
+        JScrollPane scrollObjetivos = new JScrollPane(txtObjetivos);
+        
+        JLabel lblCronograma = new JLabel("Cronograma:");
+        JTextArea txtCronograma = new JTextArea(proyectoSeleccionado.getCronograma(), 5, 20);
+        
+        // Aumentar tamaño de letra en un 20%
+        Font fontCronograma = txtCronograma.getFont();
+        float newSizeCronograma = fontCronograma.getSize() * 1.2f;
+        txtCronograma.setFont(fontCronograma.deriveFont(newSizeCronograma));
+        
+        JScrollPane scrollCronograma = new JScrollPane(txtCronograma);
+        
+        JLabel lblPresupuesto = new JLabel("Presupuesto ($):");
+        JTextField txtPresupuesto = new JTextField(String.valueOf(proyectoSeleccionado.getPresupuesto()));
+        
+        JLabel lblDocente = new JLabel("Docente:");
+        JComboBox<Docente> cmbDocente = new JComboBox<>();
+        
+        // Cargar todos los docentes disponibles
+        List<Docente> docentes = controladorUsuarios.obtenerDocentes();
+        for (Docente docente : docentes) {
+            cmbDocente.addItem(docente);
+            // Seleccionar el docente actual del proyecto
+            if (docente.getId().equals(proyectoSeleccionado.getDocente().getId())) {
+                cmbDocente.setSelectedItem(docente);
+            }
+        }
+        
+        // Agregar componentes al panel del formulario
+        panelFormulario.add(lblTitulo);
+        panelFormulario.add(txtTitulo);
+        panelFormulario.add(lblArea);
+        panelFormulario.add(txtArea);
+        panelFormulario.add(lblObjetivos);
+        panelFormulario.add(scrollObjetivos);
+        panelFormulario.add(lblCronograma);
+        panelFormulario.add(scrollCronograma);
+        panelFormulario.add(lblPresupuesto);
+        panelFormulario.add(txtPresupuesto);
+        panelFormulario.add(lblDocente);
+        panelFormulario.add(cmbDocente);
+        
+        // Panel de botones
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnGuardar = new JButton("Guardar");
+        JButton btnCancelar = new JButton("Cancelar");
+        
+        panelBotones.add(btnGuardar);
+        panelBotones.add(btnCancelar);
+        
+        // Agregar paneles al diálogo
+        panel.add(new JLabel("Actualizar información del proyecto:"), BorderLayout.NORTH);
+        panel.add(panelFormulario, BorderLayout.CENTER);
+        panel.add(panelBotones, BorderLayout.SOUTH);
+        
+        // Eventos
+        btnGuardar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    // Validar campos
+                    String titulo = txtTitulo.getText().trim();
+                    String area = txtArea.getText().trim();
+                    String objetivos = txtObjetivos.getText().trim();
+                    String cronograma = txtCronograma.getText().trim();
+                    String presupuestoStr = txtPresupuesto.getText().trim();
+                    
+                    if (titulo.isEmpty() || area.isEmpty() || objetivos.isEmpty() || 
+                        cronograma.isEmpty() || presupuestoStr.isEmpty()) {
+                        Utilidades.mostrarError("Todos los campos son obligatorios", "Error de validación");
+                        return;
+                    }
+                    
+                    double presupuesto = Double.parseDouble(presupuestoStr);
+                    Docente docenteSeleccionado = (Docente) cmbDocente.getSelectedItem();
+                    
+                    // Actualizar el proyecto
+                    proyectoSeleccionado.setTitulo(titulo);
+                    proyectoSeleccionado.setArea(area);
+                    proyectoSeleccionado.setObjetivos(objetivos);
+                    proyectoSeleccionado.setCronograma(cronograma);
+                    proyectoSeleccionado.setPresupuesto(presupuesto);
+                    
+                    // Si el docente cambió, actualizar la relación
+                    if (!proyectoSeleccionado.getDocente().equals(docenteSeleccionado)) {
+                        // Remover el proyecto del docente anterior
+                        Docente docenteAnterior = proyectoSeleccionado.getDocente();
+                        docenteAnterior.getProyectos().remove(proyectoSeleccionado);
+                        
+                        // Asignar el nuevo docente
+                        proyectoSeleccionado.setDocente(docenteSeleccionado);
+                        
+                        // Agregar el proyecto a la lista del nuevo docente
+                        docenteSeleccionado.agregarProyecto(proyectoSeleccionado);
+                    }
+                    
+                    Utilidades.mostrarMensaje("Proyecto actualizado exitosamente", "Éxito");
+                    actualizarDetallesProyecto();
+                    dialog.dispose();
+                    
+                } catch (NumberFormatException ex) {
+                    Utilidades.mostrarError("El presupuesto debe ser un número válido", "Error de validación");
+                }
+            }
+        });
+        
+        btnCancelar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+        
+        dialog.add(panel);
+        dialog.setVisible(true);
     }
 }
